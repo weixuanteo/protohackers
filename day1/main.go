@@ -47,6 +47,9 @@ func handleConn(conn net.Conn) {
 	buf := make([]byte, 1024)
 	for {
 		n, err := conn.Read(buf)
+
+		fmt.Println(string(buf[:n]))
+
 		if err != nil {
 			if err != io.EOF {
 				fmt.Println("Error: ", err.Error())
@@ -116,5 +119,4 @@ func isPrime(n int) bool {
 	}
 
 	return true
-
 }
