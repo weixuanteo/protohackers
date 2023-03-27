@@ -1,8 +1,8 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
+	"io"
 	"net"
 )
 
@@ -32,15 +32,30 @@ func main() {
 func handleConn(conn net.Conn) {
 	defer conn.Close()
 
-	scanner := bufio.NewScanner(conn)
-	for scanner.Scan() {
-		data := scanner.Bytes()
-		_, err := conn.Write(data)
+	// scanner := bufio.NewScanner(conn)
+	// for scanner.Scan() {
+	// 	data := scanner.Bytes()
+	// 	_, err := conn.Write(data)
+	// 	if err != nil {
+	// 		fmt.Println(err)
+	// 		return
+	// 	}
+	// }
+
+	buf := make([]byte, 1024)
+	for {
+		n, err := conn.Read(buf)
 		if err != nil {
-			fmt.Println(err)
+			if err != io.EOF {
+				fmt.Println("Error: ", err.Error())
+			}
+			return
+		}
+
+		_, err = conn.Write(buf[:n])
+		if err != nil {
+			fmt.Println("Error: ", err.Error())
 			return
 		}
 	}
-
-	fmt.Println("Closing connection")
 }
