@@ -55,6 +55,8 @@ func handleConn(conn net.Conn) {
 	for scanner.Scan() {
 		in := scanner.Bytes()
 
+		fmt.Printf("received request: %v\n", string(in))
+
 		var out []byte
 		var req Request
 		err := json.Unmarshal(in, &req)
