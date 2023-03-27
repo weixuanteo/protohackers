@@ -1,9 +1,9 @@
 package main
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
-	"io"
 	"math"
 	"net"
 )
@@ -51,56 +51,26 @@ func handleConn(conn net.Conn) {
 		fmt.Printf("closed connection: %v\n", addr)
 	}()
 
-	buf := make([]byte, 1024)
-	for {
-		n, err := conn.Read(buf)
+	scanner := bufio.NewScanner(conn)
+	for scanner.Scan() {
+		in := scanner.Bytes()
 
-		fmt.Println(string(buf[:n]))
-
-		if err != nil {
-			if err != io.EOF {
-				fmt.Println("Error: ", err.Error())
-			}
-			return
+		var out []byte
+		var req Request
+		err := json.Unmarshal(in, &req)
+		if err != nil || req.Method != "isPrime" || req.Number == 0 {
+			out = []byte("invalid request")
+		} else {
+			out, _ = json.Marshal(Response{"isPrime", isPrime(req.Number)})
 		}
+		out = append(out, byte('\n'))
 
-		req := &Request{}
-		err = json.Unmarshal(buf[:n], req)
-		if err != nil {
-			_, err := conn.Write(buf[:n])
-			if err != nil {
-				fmt.Println("Error: ", err.Error())
-				return
-			}
-			fmt.Println("Connection closed because it does not match the Request format")
-			return
-		}
-
-		if req.Method == "" || req.Number == 0 || req.Method != "isPrime" {
-			_, err := conn.Write(buf[:n])
-			if err != nil {
-				fmt.Println("Error: ", err.Error())
-				return
-			}
-			fmt.Println("Connection closed because method is not isPrime or method/number is empty")
-			return
-		}
-
-		resp := &Response{
-			Method: req.Method,
-			Prime:  isPrime(req.Number),
-		}
-
-		respBytes, err := json.Marshal(resp)
+		_, err = conn.Write(out)
 		if err != nil {
 			fmt.Println(err)
 			return
-		}
-
-		_, err = conn.Write(respBytes)
-		if err != nil {
-			fmt.Println("Error: ", err.Error())
-			return
+		} else {
+			fmt.Printf("sent response: %v\n", string(out))
 		}
 	}
 }
