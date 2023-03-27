@@ -42,7 +42,14 @@ func main() {
 }
 
 func handleConn(conn net.Conn) {
-	defer conn.Close()
+
+	addr := conn.RemoteAddr()
+	fmt.Printf("accepted connection: %v\n", addr)
+
+	defer func() {
+		conn.Close()
+		fmt.Printf("closed connection: %v\n", addr)
+	}()
 
 	buf := make([]byte, 1024)
 	for {
