@@ -13,8 +13,8 @@ const (
 )
 
 type Request struct {
-	Method string `json:"method"`
-	Number *int   `json:"number"`
+	Method string   `json:"method"`
+	Number *float64 `json:"number"`
 }
 
 type Response struct {
@@ -63,7 +63,7 @@ func handleConn(conn net.Conn) {
 		if err != nil || req.Method != "isPrime" || req.Number == nil {
 			out = []byte("invalid request")
 		} else {
-			out, _ = json.Marshal(Response{"isPrime", isPrime(*req.Number)})
+			out, _ = json.Marshal(Response{"isPrime", isPrime(int(*req.Number))})
 		}
 		out = append(out, byte('\n'))
 
