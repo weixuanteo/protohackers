@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	address = "0.0.0.0:5001"
+	address = "0.0.0.0:5000"
 )
 
 type PriceEntry struct {
