@@ -1,20 +1,15 @@
 package main
 
 import (
-	"bufio"
 	"encoding/binary"
 	"fmt"
+	"io"
 	"net"
 )
 
 const (
 	address = "0.0.0.0:5000"
 )
-
-type PriceEntry struct {
-	Timestamp int32
-	Price     int32
-}
 
 func main() {
 	ln, err := net.Listen("tcp", address)
@@ -23,8 +18,6 @@ func main() {
 	}
 	defer ln.Close()
 
-	priceMap := make(map[string][]PriceEntry)
-
 	for {
 		conn, err := ln.Accept()
 		if err != nil {
@@ -32,11 +25,11 @@ func main() {
 			continue
 		}
 
-		go handleConn(conn, priceMap)
+		go handleConn(conn)
 	}
 }
 
-func handleConn(conn net.Conn, priceMap map[string][]PriceEntry) {
+func handleConn(conn net.Conn) {
 	addr := conn.RemoteAddr()
 	fmt.Printf("accepted connection: %v\n", addr)
 
@@ -45,50 +38,47 @@ func handleConn(conn net.Conn, priceMap map[string][]PriceEntry) {
 		fmt.Printf("closed connection: %v\n", addr)
 	}()
 
-	scanner := bufio.NewScanner(conn)
-	for scanner.Scan() {
-		in := scanner.Bytes()
+	priceMap := make(map[int32]int32)
+	buf := make([]byte, 9)
 
-		fmt.Printf("received request: %v\n", string(in))
-
-		op := string(in[0])
-		num1 := int32(binary.BigEndian.Uint32(in[1:5]))
-		num2 := int32(binary.BigEndian.Uint32(in[5:9]))
-
-		if op == "I" {
-			priceMap[addr.String()] = append(priceMap[addr.String()], PriceEntry{num1, num2})
+	for {
+		_, err := io.ReadFull(conn, buf)
+		if err != nil || err == io.EOF {
+			break
 		}
 
-		if op == "Q" {
-			minTime := &num1
-			maxTime := &num2
-			var out []byte
+		num1 := int32(binary.BigEndian.Uint32(buf[1:5]))
+		num2 := int32(binary.BigEndian.Uint32(buf[5:]))
 
-			count := int32(0)
-			total := int32(0)
-			for _, entry := range priceMap[addr.String()] {
-				timestamp := entry.Timestamp
-				price := entry.Price
-				if timestamp >= *minTime && timestamp <= *maxTime {
-					count++
-					total += price
+		if buf[0] == 'I' {
+			priceMap[num1] = num2
+			fmt.Printf("Insert operation: %v %v for address - %v\n", num1, num2, addr)
+		}
+		if buf[0] == 'Q' {
+			n := 0
+			total := 0
+			mean := 0
+			for timestamp, price := range priceMap {
+				if timestamp >= num1 && timestamp <= num2 {
+					n++
+					total += int(price)
 				}
 			}
-			out = make([]byte, 4)
-			if count > 0 {
-				binary.BigEndian.PutUint32(out, uint32(total/count))
-			} else {
-				binary.BigEndian.PutUint32(out, 0)
+
+			if n > 0 {
+				mean = total / n
 			}
+
+			out := make([]byte, 4)
+			binary.BigEndian.PutUint32(out, uint32(mean))
 
 			_, err := conn.Write(out)
 			if err != nil {
 				fmt.Println(err)
-				return
-			} else {
-				fmt.Printf("sent response: %v\n", out)
+				break
 			}
+			fmt.Printf("Query operation: %v %v for address - %v\n", num1, num2, addr)
 		}
-
 	}
+
 }
