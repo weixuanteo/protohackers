@@ -28,7 +28,6 @@ func main() {
 			fmt.Println(err)
 			continue
 		}
-		connections[conn] = true
 		go handleConn(conn)
 	}
 }
@@ -39,9 +38,9 @@ func handleConn(conn net.Conn) {
 
 	defer func() {
 		conn.Close()
-		delete(connections, conn)
 		fmt.Printf("closed connection: %v\n", addr)
 		if _, ok := users[addr]; ok {
+			delete(connections, conn)
 			for c := range connections {
 				_, err := c.Write([]byte("* " + users[addr] + " has left the room\n"))
 				if err != nil {
@@ -75,6 +74,7 @@ func handleConn(conn net.Conn) {
 					break
 				}
 				users[addr] = name
+				connections[conn] = true
 				for c := range connections {
 					if c != conn {
 						_, err := c.Write([]byte("* " + name + " has entered the room\n"))
