@@ -49,6 +49,7 @@ func handleConn(conn net.Conn) {
 				}
 			}
 		}
+		delete(users, addr)
 	}()
 
 	scanner := bufio.NewScanner(conn)
