@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	address = "0.0.0.0:5001"
+	address = "0.0.0.0:5000"
 )
 
 var users = make(map[net.Addr]string)
