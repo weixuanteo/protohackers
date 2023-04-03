@@ -1,0 +1,33 @@
+# Compiled Object files, Static and Dynamic libs (Shared Objects)
+*.o
+*.a
+*.so
+
+# Compiled Go binary files
+*.exe
+*.test
+*.out
+
+# Compiled Go test files
+*.test
+
+# Vendor directory
+/vendor/
+
+# Build output directory
+/bin/
+
+# Log files
+*.log
+
+# Environment file
+.env
+
+# macOS files
+.DS_Store
+
+# IDE files
+.idea/
+.vscode/
+
+!main
