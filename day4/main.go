@@ -27,6 +27,7 @@ func main() {
 		}
 
 		message := string(buf[:n])
+		fmt.Printf("Received message from %v: %v\n", addr, message)
 		if strings.Contains(message, "=") {
 			parts := strings.SplitN(message, "=", 2)
 			key := strings.TrimSpace(parts[0])
