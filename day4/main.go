@@ -28,14 +28,9 @@ func main() {
 
 		message := string(buf[:n])
 		fmt.Printf("Received message from %v: %v\n", addr, message)
-		if strings.Contains(message, "=") {
-			parts := strings.SplitN(message, "=", 2)
-			key := strings.TrimSpace(parts[0])
-			value := strings.TrimSpace(parts[1])
-
-			if key != "version" {
-				store[key] = value
-			}
+		key, value, insert := strings.Cut(message, "=")
+		if insert && key != "version" {
+			store[key] = value
 		} else {
 			key := strings.TrimSpace(message)
 			value, ok := store[key]
