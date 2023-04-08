@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"net"
-	"strings"
+	"regexp"
 	"unicode"
 )
 
@@ -61,17 +61,19 @@ func handleConn(conn net.Conn) {
 				fmt.Println(err)
 				return
 			}
-			upstreamMsg = strings.TrimRight(upstreamMsg, "\n")
-			fmt.Printf("upstream->client: '%v'", upstreamMsg)
-			words := strings.Split(upstreamMsg, " ")
-			for i, word := range words {
-				if word == "" {
-					continue
-				}
-				words[i] = rewriteIfBogusAddr(word)
-			}
-			upstreamMsg = strings.Join(words[:], " ")
-			upstreamMsg += "\n"
+			// upstreamMsg = strings.TrimRight(upstreamMsg, "\n")
+			// fmt.Printf("upstream->client: '%v'", upstreamMsg)
+			// words := strings.Split(upstreamMsg, " ")
+			// for i, word := range words {
+			// 	if word == "" {
+			// 		continue
+			// 	}
+			// 	words[i] = rewriteIfBogusAddr(word)
+			// }
+			// upstreamMsg = strings.Join(words[:], " ")
+			// upstreamMsg += "\n"
+			boguscoinRegex := regexp.MustCompile(`(?m)(^|\s)7[\w\d]{25,34}(\s|$)`)
+			upstreamMsg = boguscoinRegex.ReplaceAllString(upstreamMsg, " "+bogus)
 			upstreamMsgs <- upstreamMsg
 		}
 	}()
@@ -83,17 +85,19 @@ func handleConn(conn net.Conn) {
 				fmt.Println(err)
 				return
 			}
-			clientMsg = strings.TrimRight(clientMsg, "\n")
-			fmt.Printf("client->upstream: '%v'", clientMsg)
-			words := strings.Split(clientMsg, " ")
-			for i, word := range words {
-				if word == "" {
-					continue
-				}
-				words[i] = rewriteIfBogusAddr(word)
-			}
-			clientMsg = strings.Join(words[:], " ")
-			clientMsg += "\n"
+			// clientMsg = strings.TrimRight(clientMsg, "\n")
+			// fmt.Printf("client->upstream: '%v'", clientMsg)
+			// words := strings.Split(clientMsg, " ")
+			// for i, word := range words {
+			// 	if word == "" {
+			// 		continue
+			// 	}
+			// 	words[i] = rewriteIfBogusAddr(word)
+			// }
+			// clientMsg = strings.Join(words[:], " ")
+			// clientMsg += "\n"
+			boguscoinRegex := regexp.MustCompile(`(?m)(^|\s)7[\w\d]{25,34}(\s|$)`)
+			clientMsg = boguscoinRegex.ReplaceAllString(clientMsg, " "+bogus)
 			clientMsgs <- clientMsg
 		}
 	}()
