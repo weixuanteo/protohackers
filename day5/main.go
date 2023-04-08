@@ -113,7 +113,6 @@ func handleConn(conn net.Conn) {
 				fmt.Println(err)
 				return
 			}
-		default:
 		}
 	}
 
