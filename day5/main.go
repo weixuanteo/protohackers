@@ -71,11 +71,7 @@ func handleConn(conn net.Conn) {
 				words[i] = rewriteIfBogusAddr(word)
 			}
 			upstreamMsg = strings.Join(words, " ")
-			// upstreamMsg += "\n"
-			var sb strings.Builder
-			sb.WriteString(upstreamMsg)
-			sb.WriteString("\n")
-			upstreamMsg = sb.String()
+			upstreamMsg += "\n"
 			upstreamMsgs <- upstreamMsg
 		}
 	}()
@@ -97,11 +93,7 @@ func handleConn(conn net.Conn) {
 				words[i] = rewriteIfBogusAddr(word)
 			}
 			clientMsg = strings.Join(words, " ")
-			// clientMsg += "\n"
-			var sb strings.Builder
-			sb.WriteString(clientMsg)
-			sb.WriteString("\n")
-			clientMsg = sb.String()
+			clientMsg += "\n"
 			clientMsgs <- clientMsg
 		}
 	}()
