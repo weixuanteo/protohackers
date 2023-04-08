@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"net"
-	"regexp"
+	"strings"
 	"unicode"
 )
 
@@ -61,19 +61,19 @@ func handleConn(conn net.Conn) {
 				fmt.Println(err)
 				return
 			}
-			// upstreamMsg = strings.TrimRight(upstreamMsg, "\n")
-			// fmt.Printf("upstream->client: '%v'", upstreamMsg)
-			// words := strings.Split(upstreamMsg, " ")
-			// for i, word := range words {
-			// 	if word == "" {
-			// 		continue
-			// 	}
-			// 	words[i] = rewriteIfBogusAddr(word)
-			// }
-			// upstreamMsg = strings.Join(words[:], " ")
+			upstreamMsg = strings.TrimRight(upstreamMsg, "\n")
+			fmt.Printf("upstream->client: '%v'\n", upstreamMsg)
+			words := strings.Split(upstreamMsg, " ")
+			for i, word := range words {
+				if word == "" {
+					continue
+				}
+				words[i] = rewriteIfBogusAddr(word)
+			}
+			words = append(words, "\n")
+			upstreamMsg = strings.Join(words[:], " ")
 			// upstreamMsg += "\n"
-			boguscoinRegex := regexp.MustCompile(`(?m)(^|\s)7[\w\d]{25,34}(\s|$)`)
-			upstreamMsg = boguscoinRegex.ReplaceAllString(upstreamMsg, " "+bogus)
+
 			upstreamMsgs <- upstreamMsg
 		}
 	}()
@@ -85,19 +85,18 @@ func handleConn(conn net.Conn) {
 				fmt.Println(err)
 				return
 			}
-			// clientMsg = strings.TrimRight(clientMsg, "\n")
-			// fmt.Printf("client->upstream: '%v'", clientMsg)
-			// words := strings.Split(clientMsg, " ")
-			// for i, word := range words {
-			// 	if word == "" {
-			// 		continue
-			// 	}
-			// 	words[i] = rewriteIfBogusAddr(word)
-			// }
-			// clientMsg = strings.Join(words[:], " ")
+			clientMsg = strings.TrimRight(clientMsg, "\n")
+			fmt.Printf("client->upstream: '%v'\n", clientMsg)
+			words := strings.Split(clientMsg, " ")
+			for i, word := range words {
+				if word == "" {
+					continue
+				}
+				words[i] = rewriteIfBogusAddr(word)
+			}
+			words = append(words, "\n")
+			clientMsg = strings.Join(words[:], " ")
 			// clientMsg += "\n"
-			boguscoinRegex := regexp.MustCompile(`(?m)(^|\s)7[\w\d]{25,34}(\s|$)`)
-			clientMsg = boguscoinRegex.ReplaceAllString(clientMsg, " "+bogus)
 			clientMsgs <- clientMsg
 		}
 	}()
@@ -124,11 +123,7 @@ func handleConn(conn net.Conn) {
 }
 
 func rewriteIfBogusAddr(str string) string {
-	if str[0] != '7' {
-		return str
-	}
-
-	if len(str) < 26 || len(str) > 35 {
+	if len(str) < 26 || len(str) > 35 || str[0] != '7' {
 		return str
 	}
 
