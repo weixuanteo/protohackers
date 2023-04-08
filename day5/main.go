@@ -63,13 +63,6 @@ func handleConn(conn net.Conn) {
 			}
 			upstreamMsg = strings.TrimRight(upstreamMsg, "\n")
 			fmt.Printf("upstream->client: '%v'", upstreamMsg)
-			// if upstreamMsg != "" {
-			// 	words := strings.Split(upstreamMsg, " ")
-			// 	for i := 0; i < len(words); i++ {
-			// 		words[i] = rewriteIfBogusAddr(words[i])
-			// 	}
-			// 	upstreamMsg = strings.Join(words[:], " ")
-			// }
 			words := strings.Split(upstreamMsg, " ")
 			for i, word := range words {
 				if word == "" {
@@ -92,17 +85,6 @@ func handleConn(conn net.Conn) {
 			}
 			clientMsg = strings.TrimRight(clientMsg, "\n")
 			fmt.Printf("client->upstream: '%v'", clientMsg)
-			// if clientMsg != "" {
-			// 	words := strings.Split(clientMsg, " ")
-			// 	for i := 0; i < len(words); i++ {
-			// 		if i == len(words)-1 {
-			// 			words[len(words)-1] = rewriteIfBogusAddr(strings.TrimRight(words[len(words)-1], "\n"))
-			// 		}
-			// 		words[i] = rewriteIfBogusAddr(words[i])
-			// 	}
-			// 	// fmt.Println("client->server:", words)
-			// 	clientMsg = strings.Join(words[:], " ")
-			// }
 			words := strings.Split(clientMsg, " ")
 			for i, word := range words {
 				if word == "" {
@@ -139,19 +121,15 @@ func handleConn(conn net.Conn) {
 
 func rewriteIfBogusAddr(str string) string {
 	if str[0] != '7' {
-		// fmt.Println("not a bogus addr:", str)
 		return str
 	}
 
 	if len(str) < 26 || len(str) > 35 {
-		// fmt.Println("< 26 or > 35:", str)
 		return str
 	}
 
 	for _, c := range str {
 		if !unicode.IsLetter(c) && !unicode.IsDigit(c) {
-			// fmt.Printf("char: '%c'", c)
-			// fmt.Println("not a letter or digit:", str)
 			return str
 		}
 	}
