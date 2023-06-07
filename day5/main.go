@@ -73,7 +73,7 @@ func handleConn(downstream net.Conn) {
 		}
 	}
 
-	go relay(downstream, upstream)
+	go relay(upstream, downstream)
 	relay(downstream, upstream)
 }
 
